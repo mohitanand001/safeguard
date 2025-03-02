@@ -5,7 +5,7 @@
 echo "Running Safe Mode Tests..."
 
 # Test 1: Ensure Safe Mode starts
-safe-mode &
+./safeguard &
 PID=$!
 sleep 1
 ps -p $PID > /dev/null
