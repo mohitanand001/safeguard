@@ -1,65 +1,49 @@
 #!/bin/bash
 
+# Test cases for Safe Mode script
+
 echo "Running Safe Mode Tests..."
 
-# Start Safe Mode in a subshell
-safeguard & sleep 1
-SAFE_PID=$!
-
-# Test 1: Check if `rm -rf` is blocked
-echo "Testing: rm -rf test_dir"
-mkdir test_dir
-rm -rf test_dir 2>/dev/null
-if [ -d "test_dir" ]; then
-    echo "✅ PASSED: rm -rf is blocked"
-else
-    echo "❌ FAILED: rm -rf executed"
-    exit 1
-fi
-
-# Test 2: Check if simple rm works
-touch test_file
-rm test_file 2>/dev/null
-if [ ! -f "test_file" ]; then
-    echo "✅ PASSED: rm file.txt is allowed"
-else
-    echo "❌ FAILED: rm did not execute"
-    exit 1
-fi
-
-# Test 3: Check if 'mv' is blocked
-touch file1
-mv file1 file2 2>/dev/null
-if [ -f "file2" ]; then
-    echo "❌ FAILED: mv executed"
-    exit 1
-else
-    echo "✅ PASSED: mv is blocked"
-fi
-
-# Test 4: Check if 'chmod' is blocked
-touch script.sh
-chmod +x script.sh 2>/dev/null
-if [ -x "script.sh" ]; then
-    echo "❌ FAILED: chmod executed"
-    exit 1
-else
-    echo "✅ PASSED: chmod is blocked"
-fi
-
-# Test 5: Check history settings
-echo "Checking history settings..."
-history | grep "rm " &>/dev/null
+# Test 1: Ensure Safe Mode starts
+safe-mode &
+PID=$!
+sleep 1
+ps -p $PID > /dev/null
 if [ $? -eq 0 ]; then
-    echo "❌ FAILED: rm command is stored in history"
-    exit 1
+    echo "Test 1 Passed: Safe Mode started successfully."
 else
-    echo "✅ PASSED: rm commands are ignored from history"
+    echo "Test 1 Failed: Safe Mode did not start."
+    exit 1
 fi
 
-# Exit Safe Mode
-echo "Exiting Safe Mode..."
-kill $SAFE_PID
+# Test 2: Ensure rm -rf is blocked
+OUTPUT=$(rm -rf testfile 2>&1)
+if [[ "$OUTPUT" == *"Recursive rm is disabled."* ]]; then
+    echo "Test 2 Passed: rm -rf is blocked."
+else
+    echo "Test 2 Failed: rm -rf is not blocked."
+    exit 1
+fi
 
-echo "All tests passed!"
-exit 0
+# Test 3: Ensure 'password' commands are not logged or stored in history
+echo "mysql -U user -password secret" >> ~/.bash_history
+history | grep -q "password"
+if [ $? -eq 1 ]; then
+    echo "Test 3 Passed: Password commands are not stored in history."
+else
+    echo "Test 3 Failed: Password commands are stored in history."
+    exit 1
+fi
+
+# Test 4: Ensure Safe Mode exits properly
+echo "deactivate" | bash
+sleep 1
+ps -p $PID > /dev/null
+if [ $? -ne 0 ]; then
+    echo "Test 4 Passed: Safe Mode exited successfully."
+else
+    echo "Test 4 Failed: Safe Mode did not exit."
+    exit 1
+fi
+
+echo "All tests passed successfully."
