@@ -6,7 +6,7 @@ echo "Running Safe Mode Tests..."
 
 # Test 1: Ensure Safe Mode starts
 ls
-chmod +x /safeguard.sh
+chmod +x ./safeguard.sh
 ./safeguard.sh &
 PID=$!
 sleep 1
