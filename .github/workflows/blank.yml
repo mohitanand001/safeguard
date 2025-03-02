@@ -25,5 +25,5 @@ jobs:
 
       - name: Run Safe Mode Tests
         run: |
-          chmod +x test_safemode.sh
-          ./test_safemode.sh
+          chmod +x test_safeguard.sh
+          ./test_safeguard.sh
