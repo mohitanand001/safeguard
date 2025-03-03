@@ -1,13 +1,12 @@
 #!/bin/bash
 
 # Test cases for Safe Mode script
-
 echo "Running Safe Mode Tests..."
 
 # Test 1: Ensure Safe Mode starts
 ls
-chmod +x ./safeguard.sh
-source ./safeguard.sh
+chmod +x safeguard.sh
+source safeguard.sh
 # PID=$!
 # sleep 1
 # ps -p $PID > /dev/null
